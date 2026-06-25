@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Project Galaxy — Jira + Zephyr Role Prototype</title>
+<style>
+:root{
+  --bg:#f4f5f7;--panel:#fff;--ink:#172b4d;--muted:#6b778c;--line:#dfe1e6;
+  --blue:#0052cc;--blue2:#0747a6;--green:#00875a;--yellow:#ffab00;--red:#de350b;--purple:#6554c0;
+  --sidebar:#0747a6;--sidebar2:#0052cc;--soft:#f1f2f4;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:260px 1fr;height:100vh}
+.sidebar{background:linear-gradient(180deg,var(--sidebar),#05336f);color:#fff;padding:14px 10px;overflow:auto}
+.brand{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:800;padding:8px 10px 14px}
+.brand .mark{width:30px;height:30px;border-radius:8px;background:#fff;color:var(--blue);display:grid;place-items:center;font-weight:900}
+.roleBox{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:10px;margin:0 6px 14px}
+.roleBox label{display:block;font-size:11px;text-transform:uppercase;color:#bfd5ff;letter-spacing:.06em;margin-bottom:6px}
+.roleBox select{width:100%;background:#fff;color:#172b4d;border:0;border-radius:4px;padding:8px;font-weight:700}
+.roleHint{font-size:12px;line-height:1.35;color:#e9f2ff;margin-top:8px}
+.navTitle{font-size:11px;text-transform:uppercase;color:#bfd5ff;margin:18px 10px 6px;letter-spacing:.06em}
+.nav button{width:100%;display:flex;align-items:center;gap:10px;border:0;background:transparent;color:#e9f2ff;padding:9px 10px;border-radius:6px;cursor:pointer;font-size:14px;text-align:left}
+.nav button:hover,.nav button.active{background:rgba(255,255,255,.18)}
+.hidden{display:none!important}
+.main{display:grid;grid-template-rows:52px 1fr;min-width:0}
+.topbar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 18px}
+.breadcrumb{font-size:13px;color:var(--muted)}
+.topControls{display:flex;gap:10px;align-items:center}
+select,input,textarea{border:1px solid #c1c7d0;border-radius:4px;padding:8px;background:#fff;color:var(--ink);font-size:14px}
+.search{width:250px}
+.content{overflow:auto;padding:18px 22px}
+.view{display:none}.view.active{display:block}
+.pageHead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:16px}
+h1{font-size:24px;margin:0 0 4px}h2{font-size:18px;margin:0 0 12px}h3{font-size:14px;margin:14px 0 8px}
+.sub{color:var(--muted);font-size:13px}
+.btn{border:0;background:var(--blue);color:#fff;border-radius:4px;padding:8px 12px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--blue2)}.btn.secondary{background:#f4f5f7;color:#172b4d;border:1px solid #c1c7d0}.btn.green{background:var(--green)}.btn.warn{background:var(--yellow);color:#172b4d}
+.grid{display:grid;gap:14px}.cols2{grid-template-columns:1.15fr .85fr}.cols3{grid-template-columns:repeat(3,1fr)}.cols4{grid-template-columns:repeat(4,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;box-shadow:0 1px 2px rgba(9,30,66,.08)}
+.kpi .label{font-size:12px;color:var(--muted);text-transform:uppercase}.kpi .value{font-size:28px;font-weight:700;margin:5px 0}.kpi .hint{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:9px;text-align:left;vertical-align:top}
+th{background:#fafbfc;color:#5e6c84;font-weight:600;font-size:12px}
+tr:hover td{background:#f7f9fc}.selectedRow td{background:#e9f2ff!important}
+.badge{display:inline-block;border-radius:3px;padding:3px 6px;font-size:11px;font-weight:700;text-transform:uppercase}
+.ok{background:#e3fcef;color:#006644}.warnb{background:#fff0b3;color:#7a5200}.bad{background:#ffebe6;color:#bf2600}.info{background:#deebff;color:#0747a6}.purple{background:#eae6ff;color:#403294}.gray{background:#ebecf0;color:#42526e}
+.split{display:grid;grid-template-columns:320px 1fr 310px;gap:14px}
+.listItem{display:flex;align-items:flex-start;gap:10px;border-bottom:1px solid var(--line);padding:10px;cursor:pointer}
+.listItem:hover,.listItem.active{background:#deebff}
+.icon{min-width:28px;width:28px;height:28px;border-radius:4px;background:#deebff;color:#0747a6;display:grid;place-items:center;font-weight:800}
+.icon.test{background:#e3fcef;color:#006644}.icon.req{background:#fff0b3;color:#7a5200}.icon.beh{background:#eae6ff;color:#403294}.icon.logic{background:#ffebe6;color:#bf2600}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin-bottom:12px}
+.tabs button{border:0;background:transparent;padding:10px 12px;cursor:pointer;color:#42526e;font-weight:600}
+.tabs button.active{color:var(--blue);border-bottom:3px solid var(--blue)}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.full{grid-column:1/-1}textarea{min-height:76px}
+.note{background:#fffae6;border-left:4px solid var(--yellow);padding:10px 12px;margin-bottom:14px;color:#253858}
+.traceMap{position:relative;min-height:430px;background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.node{position:absolute;border:2px solid #c1c7d0;background:#fff;border-radius:4px;padding:8px 10px;min-width:112px;text-align:center;font-weight:700;cursor:pointer}
+.node small{display:block;color:var(--muted);font-weight:400;font-size:11px;margin-top:2px}
+.node.req{border-color:#ffab00;background:#fffaf0}.node.beh{border-color:#6554c0;background:#f4f0ff}.node.logic{border-color:#de350b;background:#fff4f0}.node.test{border-color:#00875a;background:#f0fff8}.node.exec{border-color:#0052cc;background:#f0f6ff}
+.lines{position:absolute;inset:0;pointer-events:none}.node.dim{opacity:.22}.node.high{box-shadow:0 0 0 4px rgba(0,82,204,.18);border-color:var(--blue)}
+.progress{height:8px;background:#ebecf0;border-radius:99px;overflow:hidden}.progress div{height:100%;background:linear-gradient(90deg,var(--red),var(--yellow),var(--green))}
+.toast{position:fixed;right:18px;bottom:18px;background:#253858;color:#fff;padding:12px 14px;border-radius:4px;display:none;z-index:10}
+@media(max-width:1150px){.split,.cols2,.cols3,.cols4{grid-template-columns:1fr}.app{grid-template-columns:1fr}.sidebar{height:auto}.main{height:auto}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="mark">PG</div><div>Project Galaxy</div></div>
+
+    <div class="roleBox">
+      <label>Engineer / stakeholder role</label>
+      <select id="roleSelect" onchange="setRole(this.value)">
+        <option value="all">All Access Demo</option>
+        <option value="project">Project Leader</option>
+        <option value="test">Test Engineer</option>
+        <option value="software">Software Engineer</option>
+        <option value="manager">Manager</option>
+        <option value="safety">Safety Engineer</option>
+      </select>
+      <div class="roleHint" id="roleHint">All tabs visible for the prototype demo.</div>
+    </div>
+
+    <div class="nav">
+      <button data-roles="all,project,manager,safety,test,software" class="active" onclick="openView('dashboard',this)">🏠 Dashboard</button>
+      <div class="navTitle" data-section="libraries">Libraries</div>
+      <button data-roles="all,project,test,safety" onclick="openView('testLibrary',this)">🧪 Test Library</button>
+      <button data-roles="all,project,safety,manager" onclick="openView('requirements',this)">📄 Requirements</button>
+      <button data-roles="all,project,safety,manager" onclick="openView('behaviour',this)">🧠 Behaviour Registry</button>
+      <button data-roles="all,project,software,safety" onclick="openView('logic',this)">💻 Software Logic</button>
+      <button data-roles="all,project,test,software,safety" onclick="openView('documents',this)">📁 Documents</button>
+      <div class="navTitle" data-section="validation">Validation</div>
+      <button data-roles="all,project,safety" onclick="openView('matrixBuilder',this)">🔗 Matrix Builder</button>
+      <button data-roles="all,project,safety,manager" onclick="openView('traceability',this)">🧭 Traceability Matrix</button>
+      <button data-roles="all,project,safety,manager" onclick="openView('coverage',this)">📊 Coverage Engine</button>
+      <button data-roles="all,test,project" onclick="openView('execution',this)">▶ Test Executions</button>
+      <button data-roles="all,test,project,manager,safety" onclick="openView('evidence',this)">🗃 Results & Evidence</button>
+      <button data-roles="all,project,manager,safety" onclick="openView('confidence',this)">📈 Confidence Engine</button>
+      <button data-roles="all,project,software,safety" onclick="openView('change',this)">⚠ Change Impact</button>
+      <button data-roles="all,project,manager,safety,test,software" onclick="openView('notifications',this)">🔔 Notifications <span class="badge bad">3</span></button>
+    </div>
+  </aside>
+
+  <section class="main">
+    <div class="topbar">
+      <div class="breadcrumb">Projects / HeatPump X / Release SW 2.3.1</div>
+      <div class="topControls">
+        <input class="search" placeholder="Search REQ, B-ID, L-ID, TS, TE..."/>
+        <select><option>HeatPump X</option></select>
+        <select><option>SW 2.3.1</option></select>
+      </div>
+    </div>
+
+    <main class="content">
+      <section id="dashboard" class="view active">
+        <div class="pageHead">
+          <div><h1>Dashboard</h1><div class="sub">Jira + Zephyr-style overview of validation status and key engines.</div></div>
+          <button class="btn" onclick="openView('matrixBuilder')">Create Matrix Link</button>
+        </div>
+        <div class="grid cols4">
+          <div class="card kpi"><div class="label">Requirements</div><div class="value">18</div><div class="hint">16 approved</div></div>
+          <div class="card kpi"><div class="label">Behaviours</div><div class="value">42</div><div class="hint">36 linked</div></div>
+          <div class="card kpi"><div class="label">Reusable test plans</div><div class="value">128</div><div class="hint">Test library</div></div>
+          <div class="card kpi"><div class="label">Executions this release</div><div class="value">23</div><div class="hint">18 completed</div></div>
+        </div>
+        <div class="grid cols2" style="margin-top:14px">
+          <div class="card"><h2>Recent validation activity</h2><table id="recentTable"></table></div>
+          <div class="card">
+            <h2>Role access concept</h2>
+            <table>
+              <tr><th>Role</th><th>Main access</th></tr>
+              <tr><td>Project Leader</td><td>Matrix Builder, Traceability, Coverage, Confidence, Change Impact</td></tr>
+              <tr><td>Test Engineer</td><td>Test Library, Documents, Test Execution, Results & Evidence</td></tr>
+              <tr><td>Software Engineer</td><td>Software Logic, Documents, Change Impact, Notifications</td></tr>
+              <tr><td>Manager</td><td>Dashboard, Traceability, Coverage, Evidence, Confidence</td></tr>
+              <tr><td>Safety Engineer</td><td>Requirements, Behaviour Registry, Matrix, Coverage, Change Impact</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="testLibrary" class="view">
+        <div class="pageHead"><div><h1>Test Library</h1><div class="sub">Reusable parametric test plans/scripts plus required documents. These are not executions.</div></div><button class="btn">+ New reusable test plan</button></div>
+        <div class="split">
+          <div class="card"><h2>Reusable Test Plans</h2><div id="tsList"></div></div>
+          <div class="card">
+            <h2 id="tsTitle">TS-007 · Combined Stability + Risk</h2>
+            <div class="tabs">
+              <button class="active" onclick="tab('details',this)">Details</button><button onclick="tab('script',this)">Script</button><button onclick="tab('pre',this)">Preconditions</button><button onclick="tab('docs',this)">Documents</button><button onclick="tab('links',this)">Linked IDs</button>
+            </div>
+            <div id="tsPanel"></div>
+          </div>
+          <div class="card"><h2>Selected test summary</h2><div id="tsSide"></div></div>
+        </div>
+      </section>
+
+      <section id="requirements" class="view"><div class="pageHead"><div><h1>Requirements</h1><div class="sub">Short requirement stories from sales, field claims, installers, system teams, etc.</div></div></div><div class="card"><table id="reqTable"></table></div></section>
+      <section id="behaviour" class="view"><div class="pageHead"><div><h1>Behaviour Registry</h1><div class="sub">Jira tickets describing observable behaviours.</div></div></div><div class="card"><table id="behTable"></table></div></section>
+      <section id="logic" class="view"><div class="pageHead"><div><h1>Software Logic Library</h1><div class="sub">Documentation of software logics and how they work.</div></div></div><div class="card"><table id="logicTable"></table></div></section>
+      <section id="documents" class="view"><div class="pageHead"><div><h1>Documents</h1><div class="sub">Installation guides, update instructions, circuit maps, wiring diagrams, analysis templates.</div></div></div><div class="card"><table id="docTable"></table></div></section>
+
+      <section id="matrixBuilder" class="view">
+        <div class="pageHead"><div><h1>Traceability Matrix Builder</h1><div class="sub">Project leader starts from a reusable test plan and links it to requirement, behaviour, and software logic IDs.</div></div><button class="btn green" onclick="saveMatrix()">Approve matrix row</button></div>
+        <div class="grid cols2">
+          <div class="card">
+            <h2>Create relation from Test Library</h2>
+            <div class="form">
+              <label>Reusable Test Plan / Script<select><option>TS-007 · Combined Stability + Risk</option><option>TS-003 · Risk Detection Threshold</option><option>TS-008 · Protection with Evidence Capture</option></select></label>
+              <label>Release<input value="SW 2.3.1"></label>
+              <label class="full">Linked Requirement IDs<input value="REQ-001, REQ-002"></label>
+              <label class="full">Linked Behaviour IDs<input value="B-002, B-003"></label>
+              <label class="full">Linked Software Logic IDs<input value="L-001, L-004, L-005"></label>
+              <label class="full">Reason for relation<textarea>Combined test validates stability behaviour and risk detection behaviour when operation changes under risk condition.</textarea></label>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Generated matrix preview</h2>
+            <table><tr><th>TS</th><th>Requirement</th><th>Behaviour</th><th>Logic</th></tr><tr><td>TS-007</td><td>REQ-001</td><td>B-002</td><td>L-001</td></tr><tr><td>TS-007</td><td>REQ-002</td><td>B-003</td><td>L-004</td></tr><tr><td>TS-007</td><td>REQ-002</td><td>B-003</td><td>L-005</td></tr></table>
+            <p class="sub">One test creates several relation rows because it validates many IDs.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="traceability" class="view">
+        <div class="pageHead"><div><h1>Traceability Matrix</h1><div class="sub">Generated from approved matrix links. Click any ID to highlight many-to-many relations.</div></div></div>
+        <div class="grid cols2">
+          <div class="card"><table id="matrixTable"></table></div>
+          <div class="card">
+            <h2>Relationship map</h2>
+            <div class="traceMap">
+              <svg id="lines" class="lines" viewBox="0 0 900 430"></svg>
+              <div class="node req" id="n-REQ-001" style="left:35px;top:55px" onclick="selectNode('REQ-001')">REQ-001<small>Normal operation</small></div>
+              <div class="node req" id="n-REQ-002" style="left:35px;top:185px" onclick="selectNode('REQ-002')">REQ-002<small>Risk prevention</small></div>
+              <div class="node beh" id="n-B-002" style="left:250px;top:90px" onclick="selectNode('B-002')">B-002<small>Stability</small></div>
+              <div class="node beh" id="n-B-003" style="left:250px;top:220px" onclick="selectNode('B-003')">B-003<small>Risk detection</small></div>
+              <div class="node logic" id="n-L-001" style="left:470px;top:75px" onclick="selectNode('L-001')">L-001<small>Control logic</small></div>
+              <div class="node logic" id="n-L-004" style="left:470px;top:190px" onclick="selectNode('L-004')">L-004<small>Risk logic</small></div>
+              <div class="node logic" id="n-L-005" style="left:470px;top:300px" onclick="selectNode('L-005')">L-005<small>Protection logic</small></div>
+              <div class="node test" id="n-TS-007" style="left:690px;top:190px" onclick="selectNode('TS-007')">TS-007<small>Combined test</small></div>
+              <div class="node exec" id="n-TE-1007" style="left:690px;top:325px" onclick="selectNode('TE-1007')">TE-1007<small>Execution</small></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="coverage" class="view"><div class="pageHead"><div><h1>Coverage Engine</h1><div class="sub">Reads the matrix before execution and checks if requirements/behaviours have enough planned tests.</div></div></div><div class="grid cols2"><div class="card"><table id="coverageTable"></table></div><div class="card"><h2>Engine output</h2><div class="note">REQ-002 is covered by B-003 and planned tests TS-003, TS-007, TS-008. B-003 has 3 planned tests and is marked ready for execution.</div><table id="coverageNotes"></table></div></div></section>
+      <section id="execution" class="view"><div class="pageHead"><div><h1>Test Executions</h1><div class="sub">Execution inherits script, preconditions, documents, and linked IDs from the test library and matrix.</div></div><button class="btn">+ Create execution round</button></div><div class="grid cols2"><div class="card"><h2>Execution queue</h2><table id="execQueue"></table></div><div class="card"><h2>TE-1007 · Execute TS-007</h2><table><tr><th>Inherited from library</th><td>TS-007 · SCR-007 · HIL preconditions · update guide · circuit map</td></tr><tr><th>Linked IDs</th><td>REQ-001, REQ-002 · B-002, B-003 · L-001, L-004, L-005</td></tr></table><h3>Result entry</h3><div class="form"><label>SW Version<input value="SW 2.3.1"></label><label>Environment ID<input value="ENV-HIL-02"></label><label>Status<select><option>PASS</option><option selected>FAIL</option><option>Needs Consultation</option><option>TBA</option></select></label><label>Evidence complete?<select><option selected>Yes</option><option>No</option></select></label><label class="full">Report link<input value="https://jira/reports/TE-1007"></label><label class="full">Comment<textarea>Risk/stability combined behaviour failed in latest release. Needs consultation with software logic owner.</textarea></label></div><br><button class="btn" onclick="toast('Execution saved. Evidence and confidence engines updated.')">Save execution</button></div></div></section>
+      <section id="evidence" class="view"><div class="pageHead"><div><h1>Results & Evidence</h1><div class="sub">Accepted only if report/data exists and result section is complete.</div></div></div><div class="card"><table id="evidenceTable"></table></div></section>
+      <section id="confidence" class="view"><div class="pageHead"><div><h1>Behaviour Confidence Engine</h1><div class="sub">Analysis mechanism for project lead/management: what passed, failed, remains open, and confidence by behaviour.</div></div></div><div class="grid cols3"><div class="card kpi"><div class="label">Overall confidence</div><div class="value">78%</div><div class="hint">Release SW 2.3.1</div></div><div class="card kpi"><div class="label">At-risk behaviours</div><div class="value">2</div><div class="hint">B-002, B-003</div></div><div class="card kpi"><div class="label">Remaining tests</div><div class="value">5</div><div class="hint">open executions</div></div></div><div class="card" style="margin-top:14px"><table id="confidenceTable"></table></div></section>
+      <section id="change" class="view"><div class="pageHead"><div><h1>Change Impact Engine</h1><div class="sub">Select a changed requirement, behaviour, or logic. The engine finds affected tests and turns on notifications.</div></div></div><div class="grid cols2"><div class="card"><h2>Record change</h2><div class="form"><label>Change level<select><option selected>Software Logic</option><option>Requirement</option><option>Behaviour Registry</option><option>Test Plan/Script</option></select></label><label>Changed ID<input value="L-004"></label><label>New version<input value="SW 2.3.2"></label><label>Owner<input value="Safety software team"></label><label class="full">Change description<textarea>Backup heater operation is no longer expected at space heating start unless outdoor conditions indicate freezing risk.</textarea></label></div><br><button class="btn warn" onclick="runImpact()">Run impact analysis</button></div><div class="card"><h2>Detected impact</h2><table id="impactTable"></table></div></div></section>
+      <section id="notifications" class="view"><div class="pageHead"><div><h1>Notifications</h1><div class="sub">Generated by coverage, execution, confidence and change impact engines.</div></div></div><div class="card"><table id="notificationTable"></table></div></section>
+    </main>
+  </section>
+</div>
+<div id="toast" class="toast"></div>
+
+<script>
+const roleHints={
+ all:'All tabs visible for the prototype demo.',
+ project:'Project Leader can build matrix links, approve coverage, review confidence, and manage change impact.',
+ test:'Test Engineer sees the test library, documents, execution workspace, results, and notifications.',
+ software:'Software Engineer sees software logic documentation and change impact notifications.',
+ manager:'Manager sees dashboard, coverage, evidence, confidence, and release risks.',
+ safety:'Safety Engineer sees requirements, behaviours, traceability, coverage and change impact.'
+};
+function setRole(role){
+ document.getElementById('roleHint').textContent=roleHints[role];
+ document.querySelectorAll('.nav button').forEach(btn=>{
+   const roles=(btn.dataset.roles||'all').split(',');
+   btn.classList.toggle('hidden',!roles.includes(role)&&role!=='all');
+ });
+ const first=[...document.querySelectorAll('.nav button:not(.hidden)')][0];
+ if(first) first.click();
+}
+
+const TS=[
+ {id:'TS-001',name:'Nominal Operation Test',script:'SCR-001',pre:'System inside allowed operating range; SW installed; sensors calibrated',docs:'Installation guide, logger setup',ids:'REQ-001 · B-001 · L-001',status:'Approved'},
+ {id:'TS-003',name:'Risk Detection Test',script:'SCR-003',pre:'Risk signal available; safety monitor enabled; HIL/Bench ready',docs:'Safety monitor guide, signal map',ids:'REQ-002 · B-003 · L-004',status:'Approved'},
+ {id:'TS-007',name:'Combined Stability + Risk',script:'SCR-007',pre:'HIL ready; operation in valid range; risk profile; synchronized logging',docs:'Software update guide, circuit map, data analysis template',ids:'REQ-001/REQ-002 · B-002/B-003 · L-001/L-004/L-005',status:'Approved'},
+ {id:'TS-008',name:'Protection with Evidence Capture',script:'SCR-008',pre:'Protection trigger available; diagnostic snapshot enabled',docs:'Logger config, service tool instruction',ids:'REQ-002/REQ-004 · B-003/B-006 · L-004/L-005/L-007',status:'Approved'},
+ {id:'TS-009',name:'Backup Heater Operation',script:'SCR-009',pre:'Outdoor condition range selected parametrically; backup heater logic enabled',docs:'Circuit map, installer configuration',ids:'REQ-006 · B-008 · L-009',status:'Draft'}
+];
+const matrix=[
+ ['TS-001','REQ-001','B-001','L-001','Nominal output behaviour'],
+ ['TS-002','REQ-001','B-002','L-001','Stable operation under demand change'],
+ ['TS-003','REQ-002','B-003','L-004','Risk detection threshold'],
+ ['TS-007','REQ-001','B-002','L-001','Stability during operation'],
+ ['TS-007','REQ-002','B-003','L-004','Risk during transient'],
+ ['TS-007','REQ-002','B-003','L-005','Protection interaction'],
+ ['TS-008','REQ-002','B-003','L-004','Risk + evidence'],
+ ['TS-008','REQ-004','B-006','L-007','Diagnostic evidence']
+];
+
+function openView(id,btn){
+ document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ render(); if(id==='traceability')setTimeout(drawLines,50);
+}
+function badge(s){let c=s==='Approved'||s==='PASS'||s==='DONE'||s==='Covered'||s==='Healthy'||s==='Accepted'?'ok':s==='FAIL'||s==='At Risk'||s==='Critical'?'bad':s==='Draft'||s==='Partial'||s==='Needs Consultation'?'warnb':'info';return `<span class="badge ${c}">${s}</span>`}
+function table(id,h,rows){let el=document.getElementById(id); if(!el)return; el.innerHTML='<tr>'+h.map(x=>`<th>${x}</th>`).join('')+'</tr>'+rows.map(r=>'<tr>'+r.map(c=>`<td>${c}</td>`).join('')+'</tr>').join('')}
+function render(){
+ table('recentTable',['Item','Status','Comment'],[['TE-1007',badge('FAIL'),'Combined stability + risk failed'],['CR-021',badge('Open'),'L-004 changed'],['N-004',badge('Open'),'3 tests need re-execution']]);
+ document.getElementById('tsList').innerHTML=TS.map((t,i)=>`<div class="listItem ${t.id==='TS-007'?'active':''}" onclick="selectTS('${t.id}')"><div class="icon test">T</div><div><b>${t.id}</b><br><span class="sub">${t.name}</span><br>${badge(t.status)}</div></div>`).join('');
+ if(!window.currentTS)window.currentTS='TS-007';renderTS();
+ table('reqTable',['REQ-ID','Short story','Source','Status'],[['REQ-001','System shall start operation within allowed range','Sales/Product',badge('Approved')],['REQ-002','System shall prevent degraded/risky operation','Field claims/Safety',badge('Approved')],['REQ-004','System shall record evidence for abnormal behaviour','Installer/Service',badge('Approved')]]);
+ table('behTable',['B-ID','Behaviour Jira ticket','Observable behaviour','Status'],[['B-001','Target output maintained','Output reaches expected band',badge('Approved')],['B-002','Stable operation','No excessive cycling or instability',badge('Approved')],['B-003','Risk detection','Risk state detected and handled',badge('Approved')],['B-006','Evidence recorded','Logs and snapshots captured',badge('Approved')]]);
+ table('logicTable',['L-ID','Logic document','How it works','Version'],[['L-001','Primary control logic','Controls start/stabilization request','SW 2.3.1'],['L-004','Risk detection logic','Detects freezing/degraded risk conditions','SW 2.3.1'],['L-005','Protection manager','Activates fallback/protection actions','SW 2.3.1'],['L-007','Diagnostics logger','Captures logs and snapshots','SW 2.3.1']]);
+ table('docTable',['Document','Type','Used by'],[['Software update guide','Instruction','TS-007'],['Circuit map','Diagram','TS-007, TS-009'],['Logger configuration','Instruction','TS-008'],['Data analysis template','Template','TS-007, TS-008']]);
+ table('matrixTable',['TS-ID','REQ-ID','B-ID','L-ID','Reason'],matrix.map(r=>r.map(x=>`<button class="btn secondary" onclick="highlight('${x}')">${x}</button>`).slice(0,4).concat(r[4])));
+ table('coverageTable',['Requirement','Behaviours in matrix','Planned tests','Coverage'],[['REQ-001','B-001, B-002','TS-001, TS-007',badge('Covered')],['REQ-002','B-003','TS-003, TS-007, TS-008',badge('Covered')],['REQ-004','B-006','TS-008',badge('Covered')],['REQ-006','B-008','TS-009',badge('Partial')]]);
+ table('coverageNotes',['Notification','Reason','Action'],[['REQ-006 partial','TS-009 is Draft','Approve script before execution'],['B-003 ready','3 planned tests','Create execution round'],['L-004 high impact','Connected to TS-003/007/008','Monitor changes']]);
+ table('execQueue',['Execution','From TS','Inherited data','Linked IDs','Status'],[['TE-1003','TS-003','SCR-003 + risk preconditions','REQ-002 · B-003 · L-004',badge('DONE')],['TE-1007','TS-007','SCR-007 + HIL + circuit map','REQ-001/002 · B-002/B-003 · L-001/L-004/L-005',badge('FAIL')],['TE-1008','TS-008','SCR-008 + logger config','REQ-002/004 · B-003/B-006 · L-004/L-005/L-007',badge('PASS')]]);
+ table('evidenceTable',['TE-ID','Report/data','Result','Accepted?','Linked behaviours'],[['TE-1003','Report + logs available',badge('PASS'),badge('Accepted'),'B-003'],['TE-1007','Report + logs available',badge('FAIL'),badge('Accepted'),'B-002, B-003'],['TE-1008','Report + logs available',badge('PASS'),badge('Accepted'),'B-003, B-006']]);
+ table('confidenceTable',['B-ID','Behaviour','Executed tests','Confidence','Status','Reason'],[['B-001','Target output','TS-001','<div class="progress"><div style="width:98%"></div></div>98%',badge('Healthy'),'Passed current evidence'],['B-002','Stability','TS-002, TS-007','<div class="progress"><div style="width:72%"></div></div>72%',badge('Watch'),'TS-007 failed'],['B-003','Risk detection','TS-003, TS-007, TS-008','<div class="progress"><div style="width:64%"></div></div>64%',badge('At Risk'),'Logic change + failed execution'],['B-006','Evidence recorded','TS-008','<div class="progress"><div style="width:90%"></div></div>90%',badge('Healthy'),'Evidence captured']]);
+ table('impactTable',['Detected by matrix','IDs','Action'],[['Impacted requirements','REQ-002, REQ-004','Mark coverage conditional'],['Impacted behaviours','B-003, B-006','Reduce confidence until revalidated'],['Tests to redo/update','TS-003, TS-007, TS-008','Create new execution round'],['Old executions','TE-1003, TE-1007, TE-1008','Flag as previous-version evidence']]);
+ table('notificationTable',['ID','Triggered by','Message','Action','Status'],[['N-001','Change L-004','Risk detection logic changed. Re-run TS-003, TS-007, TS-008.','Create executions',badge('Open')],['N-002','Execution TE-1007','Combined stability/risk failed. Consult logic owners.','Investigate',badge('Open')],['N-003','Coverage engine','REQ-006 is partially covered by draft TS-009.','Approve TS-009',badge('Open')]]);
+}
+function selectTS(id){window.currentTS=id;renderTS();document.querySelectorAll('.listItem').forEach(x=>x.classList.remove('active'))}
+function renderTS(){let t=TS.find(x=>x.id===window.currentTS)||TS[2];document.getElementById('tsTitle').innerText=t.id+' · '+t.name;document.getElementById('tsSide').innerHTML=`<table><tr><th>ID</th><td>${t.id}</td></tr><tr><th>Script</th><td>${t.script}</td></tr><tr><th>Status</th><td>${badge(t.status)}</td></tr><tr><th>Environment</th><td>${t.pre}</td></tr><tr><th>Linked IDs</th><td>${t.ids}</td></tr></table>`;renderTab('details')}
+function tab(name,btn){document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTab(name)}
+function renderTab(name){let t=TS.find(x=>x.id===window.currentTS)||TS[2];let html={details:`<p>${t.name} is a reusable parametric test plan. It does not hardcode values; it defines the operating range and expected behaviour.</p><table><tr><th>Field</th><th>Value</th></tr><tr><td>Test ID</td><td>${t.id}</td></tr><tr><td>Status</td><td>${badge(t.status)}</td></tr><tr><td>Linked IDs</td><td>${t.ids}</td></tr></table>`,script:`<h3>${t.script}</h3><ol><li>Prepare environment and install required SW.</li><li>Bring unit into valid operating range.</li><li>Apply parametric condition according to test objective.</li><li>Record logs, measurements and report summary.</li><li>Judge PASS / FAIL / Needs consultation.</li></ol>`,pre:`<p>${t.pre}</p>`,docs:`<p>${t.docs}</p><table><tr><th>Document</th><th>Purpose</th></tr><tr><td>Software update guide</td><td>Install correct SW version</td></tr><tr><td>Circuit map</td><td>Prepare wiring/setup</td></tr><tr><td>Logger setup</td><td>Capture evidence</td></tr></table>`,links:`<p>${t.ids}</p><p class="sub">These links are used to build the traceability matrix when the project leader approves this test for execution.</p>`}[name];document.getElementById('tsPanel').innerHTML=html}
+function saveMatrix(){toast('Matrix rows approved. Coverage engine can now analyze REQ/B/L coverage.')}
+function runImpact(){toast('Impact analysis completed. Notification N-001 created and tests TS-003/007/008 flagged for re-execution.')}
+function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.style.display='block';setTimeout(()=>t.style.display='none',3500)}
+const edges=[['REQ-001','B-002'],['REQ-002','B-003'],['B-002','L-001'],['B-003','L-004'],['B-003','L-005'],['L-001','TS-007'],['L-004','TS-007'],['L-005','TS-007'],['TS-007','TE-1007']];
+function drawLines(){let svg=document.getElementById('lines');if(!svg)return;svg.innerHTML='';edges.forEach(([a,b])=>{let A=document.getElementById('n-'+a),B=document.getElementById('n-'+b);if(!A||!B)return;let x1=A.offsetLeft+55,y1=A.offsetTop+23,x2=B.offsetLeft+55,y2=B.offsetTop+23;let l=document.createElementNS('http://www.w3.org/2000/svg','line');l.setAttribute('x1',x1);l.setAttribute('y1',y1);l.setAttribute('x2',x2);l.setAttribute('y2',y2);l.setAttribute('stroke','#97a0af');l.setAttribute('stroke-width','2');svg.appendChild(l)})}
+function selectNode(id){highlight(id)}
+function highlight(id){document.querySelectorAll('.node').forEach(n=>{let nid=n.id.replace('n-','');let related=[id,...edges.filter(e=>e.includes(id)).flat()];n.classList.toggle('dim',!related.includes(nid));n.classList.toggle('high',related.includes(nid))});toast(id+' selected: related IDs highlighted.')}
+render();
+setRole('all');
+</script>
+</body>
+</html>
